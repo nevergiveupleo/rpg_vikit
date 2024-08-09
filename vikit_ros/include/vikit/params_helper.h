@@ -2,6 +2,7 @@
  * ros_params_helper.h
  *
  *  Created on: Feb 22, 2013
+ *      Modified for ROS 2: 2024
  *      Author: cforster
  *
  * from libpointmatcher_ros
@@ -11,42 +12,51 @@
 #define ROS_PARAMS_HELPER_H_
 
 #include <string>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace vk {
 
 inline
-bool hasParam(const std::string& name)
+bool hasParam(rclcpp::Node::SharedPtr node, const std::string& name)
 {
-  return ros::param::has(name);
+  return node->has_parameter(name);
 }
 
 template<typename T>
-T getParam(const std::string& name, const T& defaultValue)
+T getParam(rclcpp::Node::SharedPtr node, const std::string& name, const T& defaultValue)
 {
   T v;
-  if(ros::param::get(name, v))
+  rclcpp::Parameter param;
+  if(node->get_parameter(name, param))
   {
-    ROS_INFO_STREAM("Found parameter: " << name << ", value: " << v);
+    v = param.get_value<T>();
+    RCLCPP_INFO_STREAM(node->get_logger(), "Found parameter: " << name << ", value: " << v);
     return v;
   }
   else
-    ROS_WARN_STREAM("Cannot find value for parameter: " << name << ", assigning default: " << defaultValue);
-  return defaultValue;
+  {
+    RCLCPP_WARN_STREAM(node->get_logger(), "Cannot find value for parameter: " << name << ", assigning default: " << defaultValue);
+    node->declare_parameter(name, defaultValue);
+    return defaultValue;
+  }
 }
 
 template<typename T>
-T getParam(const std::string& name)
+T getParam(rclcpp::Node::SharedPtr node, const std::string& name)
 {
   T v;
-  if(ros::param::get(name, v))
+  rclcpp::Parameter param;
+  if(node->get_parameter(name, param))
   {
-    ROS_INFO_STREAM("Found parameter: " << name << ", value: " << v);
+    v = param.get_value<T>();
+    RCLCPP_INFO_STREAM(node->get_logger(), "Found parameter: " << name << ", value: " << v);
     return v;
   }
   else
-    ROS_ERROR_STREAM("Cannot find value for parameter: " << name);
-  return T();
+  {
+    RCLCPP_ERROR_STREAM(node->get_logger(), "Cannot find value for parameter: " << name);
+    throw std::runtime_error("Parameter not found: " + name);
+  }
 }
 
 } // namespace vk

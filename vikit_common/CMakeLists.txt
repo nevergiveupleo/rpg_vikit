@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.8.3)
 SET(CMAKE_BUILD_TYPE Release) # Release, RelWithDebInfo
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/")
-SET(USE_ROS TRUE) # Set False if you want to build this package without Catkin
+SET(USE_ROS FALSE) # Set False if you want to build this package without Catkin
 
 # Set build flags. Set IS_ARM on odroid board as environment variable
 SET(CMAKE_CXX_FLAGS "-Wall -D_LINUX -D_REENTRANT -march=native -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unknown-pragmas")
@@ -23,7 +23,9 @@ SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -
 # Add plain cmake packages 
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(Eigen REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/ros2_ws/src/Sophus/install/lib")
 FIND_PACKAGE(Sophus REQUIRED)
+set(Sophus_INCLUDE_DIRS "$ENV{HOME}/ros2_ws/src/Sophus/install/include")
 
 # Include dirs
 INCLUDE_DIRECTORIES(
@@ -43,8 +45,8 @@ IF(USE_ROS)
     LIBRARIES ${PROJECT_NAME}
   )
 ELSE()
-  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-  SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+  SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_INSTALL_PREFIX}/bin)
+  # SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 ENDIF()
 
 # Set Sourcefiles
@@ -64,7 +66,8 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCEFILES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
   ${OpenCV_LIBS}
   ${Sophus_LIBRARIES}
-  ${catkin_LIBRARIES})
+  # ${catkin_LIBRARIES}
+  )
 
 IF(USE_ROS)
   TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${catkin_LIBRARIES})
@@ -87,7 +90,8 @@ IF(NOT USE_ROS)
   GET_TARGET_PROPERTY( FULL_LIBRARY_NAME ${PROJECT_NAME} LOCATION )
   SET(vikit_common_LIBRARIES ${FULL_LIBRARY_NAME} )
   SET(vikit_common_LIBRARY_DIR ${PROJECT_BINARY_DIR} )
-  SET(vikit_common_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+  SET(vikit_common_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
+  message(STATUS "vikit_common_INCLUDE_DIR: ${vikit_common_INCLUDE_DIR}")
   CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/vikit_commonConfig.cmake.in
       ${CMAKE_CURRENT_BINARY_DIR}/vikit_commonConfig.cmake @ONLY IMMEDIATE )
   export( PACKAGE vikit_common )
