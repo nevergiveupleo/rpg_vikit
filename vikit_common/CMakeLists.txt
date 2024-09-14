@@ -23,9 +23,9 @@ SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -
 # Add plain cmake packages 
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(Eigen REQUIRED)
-list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/ros2_ws/src/Sophus/install/lib")
+# list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/ros2_ws/src/Sophus/install/lib")
 FIND_PACKAGE(Sophus REQUIRED)
-set(Sophus_INCLUDE_DIRS "$ENV{HOME}/ros2_ws/src/Sophus/install/include")
+# set(Sophus_INCLUDE_DIRS "$ENV{HOME}/ros2_ws/src/Sophus/install/include")
 
 # Include dirs
 INCLUDE_DIRECTORIES(
